@@ -1,3 +1,4 @@
+import java.util.LinkedList;
 
 public class KernelandProcess {
 
@@ -8,7 +9,9 @@ public class KernelandProcess {
     private Priority priority;
     private int timesRun;
     private int[] intArr = new int[10];
-    
+    private String name;
+    private LinkedList<KernelMessage> messages = new LinkedList<KernelMessage>();
+    private int[] memory = new int[100];
 
     public KernelandProcess(UserlandProcess up)
     {
@@ -18,6 +21,11 @@ public class KernelandProcess {
         {
             intArr[i] = -1;
         }
+        for(int i = 0; i<memory.length; i++)
+        {
+            memory[i] = -1;
+        }
+        this.name = up.getClass().getSimpleName();
     }
     
     public KernelandProcess(UserlandProcess up, Priority priority)
@@ -29,6 +37,16 @@ public class KernelandProcess {
         {
             intArr[i] = -1;
         }
+        for(int i = 0; i<memory.length; i++)
+        {
+            memory[i] = -1;
+        }
+        this.name = up.getClass().getSimpleName();
+    }
+    
+    public String getName()
+    {
+        return this.name;
     }
 
     public void stop()
@@ -37,6 +55,15 @@ public class KernelandProcess {
         {
             this.thread.suspend();
         }
+    }
+
+    public void setIntArrayIndex(int index, int id)
+    {
+        this.intArr[index] = id;
+    }
+    public int getGetIntArrSize()
+    {
+        return intArr.length;
     }
 
     public void addTimesRun()
@@ -124,5 +151,33 @@ public class KernelandProcess {
         return this.intArr;
     }
 
+    public LinkedList<KernelMessage> getMessages()
+    {
+        return this.messages;
+    }
+
+    public void setMessages(LinkedList<KernelMessage> messages)
+    {
+        this.messages = messages;
+    }
+
+    public void addMessages(KernelMessage message)
+    {
+        this.messages.add(message);
+    }
+
+    public void setMemory(int[] memory)
+    {
+        this.memory = memory;
+    }
+
+    public int[] getMemory()
+    {
+        return this.memory;
+    }
+
+    public int[] getVirtualMemory() {
+        return null;
+    }
 
 }

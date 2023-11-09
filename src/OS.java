@@ -1,3 +1,5 @@
+import java.util.Random;
+
 public class OS {
     
     private static Kernel kernel;
@@ -43,5 +45,64 @@ public class OS {
         return kernel.Write(id, data);
     }
 
+    public static int GetPid()
+    {
+        return kernel.GetPid();
+    }
+
+    public static int GetPidByName(String name)
+    {
+        return kernel.GetPidByName(name);
+    }
     
+    public static void SendMessage(KernelMessage message)
+    {
+        kernel.SendMessage(message);
+    }
+
+    public static KernelMessage WaitForMessage()
+    {
+        return kernel.WaitForMessage();
+    }
+
+    public static KernelandProcess getCurrentlyRunning()
+    {
+        return kernel.getCurrentlyRunning();
+    }
+    
+    public static void GetMapping(int virtualPageNumber)
+    {
+        KernelandProcess currentlyRunning = getCurrentlyRunning();
+        int physicalPageNumber;
+        if((physicalPageNumber = currentlyRunning.getMemory()[virtualPageNumber]) != -1)
+        {
+            Random random = new Random(System.currentTimeMillis());
+            int rand = random.nextInt(2); 
+            UserlandProcess.TLB[rand][0]= virtualPageNumber;
+            UserlandProcess.TLB[rand][1]= physicalPageNumber;
+        }
+        else
+        {
+            kernel.KillCurrentProcess();
+        }
+    }
+
+    public int AllocateMemory(int size)
+    {
+        if(size % 1024 != 0)
+        {
+            return -1;
+        }
+        return kernel.AllocateMemory(size);
+    }
+
+    public boolean FreeMemory(int pointer, int size)
+    {
+        if(size % 1024 != 0 && pointer % 1024 != 0)
+        {
+            return false;
+        }
+
+        return kernel.FreeMemory(pointer, size);
+    }
 }

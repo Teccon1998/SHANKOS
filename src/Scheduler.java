@@ -1,5 +1,6 @@
 import java.time.Clock;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
@@ -18,19 +19,23 @@ public class Scheduler {
     private List<KernelandProcess> interactiveProcesses;
     private List<KernelandProcess> backgroundProcesses;
 
+    private HashMap<String, KernelandProcess> processesByName = new HashMap<>();
+    private HashMap<Integer, KernelandProcess> processesByPID = new HashMap<>();
     private List<Pair> sleepingProcesses;
     private Timer timer;
+    private Kernel kernelRef;
     private KernelandProcess currentProcess;
     private Clock clock;
 
 
-    public Scheduler()
+    public Scheduler(Kernel kernel)
     {
         this.realTimeProcesses = Collections.synchronizedList(new LinkedList<KernelandProcess>());
         this.interactiveProcesses = Collections.synchronizedList(new LinkedList<KernelandProcess>());
         this.backgroundProcesses = Collections.synchronizedList(new LinkedList<KernelandProcess>());  
         this.sleepingProcesses = Collections.synchronizedList(new LinkedList<Pair>());
         this.timer = new Timer();
+        this.kernelRef = kernel;
         timer.schedule(new Interrupt(), 250, 250);
         this.clock = Clock.systemDefaultZone();
     }
@@ -46,6 +51,8 @@ public class Scheduler {
         }
 
         process.setNextPID();
+        processesByName.put(process.getName(), process);
+        processesByPID.put(process.getPid(), process);
         return process.getPid();
     }
 
@@ -73,6 +80,7 @@ public class Scheduler {
         }
 
         process.setNextPID();
+        processesByName.put(process.getName(), process);
         return process.getPid();
     }
 
@@ -204,7 +212,23 @@ public class Scheduler {
             }
             else
             {
+                closeAllDevices();
+                freeAllMemory();
+                processesByPID.remove(this.currentProcess.getPid());
+                processesByName.remove(this.currentProcess.getName());
                 this.currentProcess = null;
+            }
+        }
+    }
+
+    public void closeAllDevices()
+    {
+        for(int i = 0;i < currentProcess.getGetIntArrSize(); i++ )
+        {
+            if(currentProcess.getIntArr()[i] != -1)
+            {
+                kernelRef.Close(currentProcess.getIntArr()[i]);
+                currentProcess.setIntArrayIndex(i, -1);
             }
         }
     }
@@ -218,6 +242,7 @@ public class Scheduler {
             this.currentProcess.run();
         }
     }
+
 
     public void Sleep(int milliseconds)
     {
@@ -251,8 +276,77 @@ public class Scheduler {
         temp.stop();
     }
 
+    public void KillCurrentProcess()
+    {
+        if(this.currentProcess != null)
+        {
+            KernelandProcess temp = this.currentProcess;
+            processesByName.remove(temp.getName());
+            processesByPID.remove(temp.getPid());
+            closeAllDevices();
+            freeAllMemory();
+            this.currentProcess = null;
+            SwitchProcess();
+            temp.stop();
+        }
+    }
+
+
     public KernelandProcess getCurrentlyRunning()
     {
         return this.currentProcess;
+    }
+
+    public int GetPid()
+    {
+        return this.currentProcess.getPid();
+    }
+
+    public int GetPidByName(String name)
+    {
+        if(processesByName.containsKey(name))
+        {
+            return processesByName.get(name).getPid();
+        }
+        else
+        {
+            return -1;
+        }
+    }
+
+    public HashMap<Integer, KernelandProcess> getHashMap()
+    {
+        return this.processesByPID;
+    }
+
+    public Priority getPriority()
+    {
+        return this.currentProcess.getPriority();
+    }
+
+    public void setCurrentProcess(KernelandProcess process)
+    {
+        this.currentProcess = process;
+    }
+
+
+    public List<KernelandProcess> getPriorityList(Priority priority)
+    {
+        switch(priority)
+        {
+            case RealTime:
+                return this.realTimeProcesses;
+            case Interactive:
+                return this.interactiveProcesses;
+            case Background:
+                return this.backgroundProcesses;
+            default:
+                return null;
+        }
+    }
+
+    private void freeAllMemory()
+    {
+        kernelRef.FreeMemory(0, 1024*100);
     }
 }
