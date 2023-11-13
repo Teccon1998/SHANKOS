@@ -36,6 +36,7 @@ public class DeviceTest {
 
         //This should fail and return no space in VFS.
         int randID11Test = OS.Open("random 11");
+        System.out.println(randID11Test);
 
         for(int i = 0; i<10; i++)
         {

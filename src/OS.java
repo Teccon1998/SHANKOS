@@ -74,7 +74,7 @@ public class OS {
     {
         KernelandProcess currentlyRunning = getCurrentlyRunning();
         int physicalPageNumber;
-        if((physicalPageNumber = currentlyRunning.getMemory()[virtualPageNumber]) != -1)
+        if((physicalPageNumber = currentlyRunning.getVirtualMemory()[virtualPageNumber]) != -1)
         {
             Random random = new Random(System.currentTimeMillis());
             int rand = random.nextInt(2); 
@@ -87,7 +87,7 @@ public class OS {
         }
     }
 
-    public int AllocateMemory(int size)
+    public static int AllocateMemory(int size)
     {
         if(size % 1024 != 0)
         {
@@ -96,7 +96,7 @@ public class OS {
         return kernel.AllocateMemory(size);
     }
 
-    public boolean FreeMemory(int pointer, int size)
+    public static boolean FreeMemory(int pointer, int size)
     {
         if(size % 1024 != 0 && pointer % 1024 != 0)
         {

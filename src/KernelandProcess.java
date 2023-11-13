@@ -166,18 +166,13 @@ public class KernelandProcess {
         this.messages.add(message);
     }
 
-    public void setMemory(int[] memory)
+    public void setVirtualMemory(int[] memory)
     {
         this.memory = memory;
     }
 
-    public int[] getMemory()
-    {
-        return this.memory;
-    }
-
     public int[] getVirtualMemory() {
-        return null;
+        return memory;
     }
 
 }

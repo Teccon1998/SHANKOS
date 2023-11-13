@@ -10,30 +10,22 @@ public class Main {
                         while(true)
                         {
                             try {
-                                Thread.sleep(40);
-                            } catch (Exception e) {
-                                // TODO: handle exception
-                            }
-                        }
-                    }
-                });
+                                OS.AllocateMemory(1024);
+                                for(int i = 0; i < 2048 ;i++)
+                                {
+                                    System.out.print("Writing " + i);
+                                    System.out.println(" ByteVersion: " + (byte) i);
+                                    Write(i, (byte) i);
+                                    System.out.println("Sleeping thread for debugging and inspecting RAM.");
+                                    Thread.sleep(1000000);
+                                }
 
-                OS.CreateProcess(new UserlandProcess() {
-                    @Override
-                    public void run(){
-                        while(true)
-                        {
-                            try {
-                                Thread.sleep(40);
                             } catch (Exception e) {
                                 // TODO: handle exception
                             }
                         }
                     }
                 });
-                System.out.println("Hello World");
-                Read(0);
-                System.out.println("Hello World2");
             }
         });
 

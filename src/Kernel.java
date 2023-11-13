@@ -269,23 +269,23 @@ public class Kernel implements Device{
     }
 
     public boolean FreeMemory(int pointer, int size) {
-        KernelandProcess KLP = this.scheduler.getCurrentlyRunning();
-        int pagesNeeded = size/1024;
-        int[] virtualMemory = KLP.getVirtualMemory();
-        int initalPage = pointer/1024;
 
-        //Do this so that your pointer and memory block cant exceed the size of the virtual memory.
+        KernelandProcess KLP = this.scheduler.getCurrentlyRunning();
+        int initalPage = pointer / 1024;
+        int[] virtualMemory = KLP.getVirtualMemory();
+
         if(pointer + size> virtualMemory.length * 1024)
         {
             return false;
         }
 
-        for(int i = 0; i < pagesNeeded; i++)
+        for(int i = initalPage; i < virtualMemory.length; i++)
         {
-            if(virtualMemory[initalPage + i] != -1)
+            int physicalPage = virtualMemory[i];
+            if(physicalPage != -1)
             {
-                freeList[virtualMemory[initalPage + i]] = false;
-                virtualMemory[initalPage + i] = -1;
+                freeList[physicalPage] = false;
+                virtualMemory[i] = -1;
             }
         }
         return true;

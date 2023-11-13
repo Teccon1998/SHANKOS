@@ -30,7 +30,9 @@ public abstract class UserlandProcess implements Runnable{
         }
 
         physicalAddress = physicalPage * PAGESIZE + Offset;
-        return RAM[physicalAddress];
+        byte[] tempArr = RAM;
+        byte val = RAM[physicalAddress];
+        return val;
     }
 
     public void Write(int address,byte data)
@@ -58,6 +60,7 @@ public abstract class UserlandProcess implements Runnable{
             }
         }
 
+        System.out.println("pause");
         RAM[physicalPage * PAGESIZE + Offset] = data;
     }
 }
