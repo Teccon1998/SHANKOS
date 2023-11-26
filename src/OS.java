@@ -2,7 +2,7 @@ import java.util.Random;
 
 public class OS {
     
-    private static Kernel kernel;
+    private static  Kernel kernel;
 
     public static void Startup(UserlandProcess init) {
         kernel = new Kernel();
@@ -64,17 +64,11 @@ public class OS {
     {
         return kernel.WaitForMessage();
     }
-
-    public static KernelandProcess getCurrentlyRunning()
-    {
-        return kernel.getCurrentlyRunning();
-    }
     
     public static void GetMapping(int virtualPageNumber)
     {
-        KernelandProcess currentlyRunning = getCurrentlyRunning();
         int physicalPageNumber;
-        if((physicalPageNumber = currentlyRunning.getVirtualMemory()[virtualPageNumber]) != -1)
+        if((physicalPageNumber = kernel.getCurrentlyRunning().getVirtualMemory()[virtualPageNumber].getPhysicalPageNumber()) != -1)
         {
             Random random = new Random(System.currentTimeMillis());
             int rand = random.nextInt(2); 

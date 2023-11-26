@@ -6,12 +6,15 @@ public class Kernel implements Device{
     private Scheduler scheduler;
     private VFS vfs = new VFS();
     private boolean[] freeList = new boolean[1024];
+    private int fileLocation; 
+    private FakeFileSystem ffs = new FakeFileSystem();
 
     private HashMap<Integer, KernelandProcess> WaitingProcesses = new HashMap<Integer, KernelandProcess>();
 
     public Kernel()
     {
         this.scheduler = new Scheduler(this);
+        this.fileLocation = ffs.Open("swap.txt");
     }
 
     public int CreateProcess(UserlandProcess up) 
@@ -141,7 +144,7 @@ public class Kernel implements Device{
     {
         KernelandProcess KLP = this.scheduler.getCurrentlyRunning();
         int pagesNeeded = size/1024;
-        int[] virtualMemory = KLP.getVirtualMemory();
+        VirtualToPhysicalMapping[] virtualMemory = KLP.getVirtualMemory();
         boolean exit = false;
         int initalPage = -1;
 
@@ -149,16 +152,16 @@ public class Kernel implements Device{
         for(int i = 0; i<virtualMemory.length && exit == false; i++)
         {
             //if we find a place in the process' virtual memory that has a -1, we check to see if the next 'pagesNeeded' number of spaces are also -1's
-            if(virtualMemory[i] == -1)
+            if(virtualMemory[i].getPhysicalPageNumber() == -1)
             {
                 int count = 0;
-                //set j = i so we can index from i to i + pagesNeeded
+                //set j = i so we can index from i to i + pagesNeeded   
                 //First condition is dont index outside of the virtualMemory, if you do make sure return -1 in the condition outside both of these loops.
                 //Second condition is we must find 'pagesNeeded' number of -1's in a row to allocate the memory.
                 for(int j = i; j < virtualMemory.length && j < i + pagesNeeded; j++)
                 {
                     //if we find a -1, add a value to count.
-                    if(virtualMemory[j] == -1)
+                    if(virtualMemory[j].getPhysicalPageNumber() == -1)
                     {
                         count++;
                     }
@@ -166,7 +169,7 @@ public class Kernel implements Device{
                     //If we find a value that is -1 and count == pagesNeeded, we have found a place to allocate memory.
                     //Set that inital page value to i because thats the location we found for contiguous memory.
                     //Break out of inner loop and set exit to true to break out of outer loop.
-                    if(virtualMemory[j]== -1 && count == pagesNeeded)
+                    if(virtualMemory[j].getPhysicalPageNumber()== -1 && count == pagesNeeded)
                     {
                         initalPage = i;
                         exit = true;
@@ -175,7 +178,7 @@ public class Kernel implements Device{
                     //If we find a value that is not -1, we need to start looking for contiguous memory again.
                     //We do this by skipping the indexes we already looked at in the outer loop because we know they wont contain enough memory.
                     //and then we break out of the inner loop.
-                    if(virtualMemory[j] != -1)
+                    if(virtualMemory[j].getPhysicalPageNumber() != -1)
                     {
                         i = j;
                         break;
@@ -262,7 +265,9 @@ public class Kernel implements Device{
          */
         for(int i = initalPage, k = 0; i < initalPage + pagesNeeded; i++, k++)
         {
-            virtualMemory[i] = physicalPages[k];
+            VirtualToPhysicalMapping temp = new VirtualToPhysicalMapping();
+            temp.setPhysicalPageNumber(physicalPages[k]);
+            virtualMemory[i] = temp;
             freeList[physicalPages[k]] = true;
         }
         return initalPage * 1024;
@@ -270,9 +275,8 @@ public class Kernel implements Device{
 
     public boolean FreeMemory(int pointer, int size) {
 
-        KernelandProcess KLP = this.scheduler.getCurrentlyRunning();
         int initalPage = pointer / 1024;
-        int[] virtualMemory = KLP.getVirtualMemory();
+        VirtualToPhysicalMapping[] virtualMemory = scheduler.getCurrentlyRunning().getVirtualMemory();
 
         if(pointer + size> virtualMemory.length * 1024)
         {
@@ -281,13 +285,20 @@ public class Kernel implements Device{
 
         for(int i = initalPage; i < virtualMemory.length; i++)
         {
-            int physicalPage = virtualMemory[i];
+            int physicalPage = virtualMemory[i].getPhysicalPageNumber();
             if(physicalPage != -1)
             {
                 freeList[physicalPage] = false;
-                virtualMemory[i] = -1;
+                virtualMemory[i] = null;
             }
         }
         return true;
+    }
+    public int getFileLocation() {
+        return this.fileLocation;
+    }
+
+    public void setFileLocation(int fileLocation) {
+        this.fileLocation = fileLocation;
     }
 }

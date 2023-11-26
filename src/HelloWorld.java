@@ -1,6 +1,14 @@
 public class HelloWorld extends UserlandProcess {
     @Override
     public void run() {
-        System.out.println("HelloWorld!");
+        while(true)
+        {
+            System.out.println("Hello World");
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

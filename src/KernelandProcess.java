@@ -11,7 +11,7 @@ public class KernelandProcess {
     private int[] intArr = new int[10];
     private String name;
     private LinkedList<KernelMessage> messages = new LinkedList<KernelMessage>();
-    private int[] memory = new int[100];
+    private VirtualToPhysicalMapping[] virtualToPhysicalMapping = new VirtualToPhysicalMapping[100];
 
     public KernelandProcess(UserlandProcess up)
     {
@@ -21,9 +21,11 @@ public class KernelandProcess {
         {
             intArr[i] = -1;
         }
-        for(int i = 0; i<memory.length; i++)
+        for(int i = 0; i<virtualToPhysicalMapping.length; i++)
         {
-            memory[i] = -1;
+            VirtualToPhysicalMapping vtpm = new VirtualToPhysicalMapping();
+            vtpm.setPhysicalPageNumber(-1);
+            virtualToPhysicalMapping[i] = vtpm;
         }
         this.name = up.getClass().getSimpleName();
     }
@@ -37,9 +39,11 @@ public class KernelandProcess {
         {
             intArr[i] = -1;
         }
-        for(int i = 0; i<memory.length; i++)
+        for(int i = 0; i<virtualToPhysicalMapping.length; i++)
         {
-            memory[i] = -1;
+            VirtualToPhysicalMapping vtpm = new VirtualToPhysicalMapping();
+            vtpm.setPhysicalPageNumber(-1);
+            virtualToPhysicalMapping[i] = vtpm;
         }
         this.name = up.getClass().getSimpleName();
     }
@@ -166,13 +170,13 @@ public class KernelandProcess {
         this.messages.add(message);
     }
 
-    public void setVirtualMemory(int[] memory)
+    public void setVirtualMemory(VirtualToPhysicalMapping[] virtualToPhysicalMapping)
     {
-        this.memory = memory;
+        this.virtualToPhysicalMapping = virtualToPhysicalMapping;
     }
 
-    public int[] getVirtualMemory() {
-        return memory;
+    public VirtualToPhysicalMapping[] getVirtualMemory() {
+        return virtualToPhysicalMapping;
     }
 
 }
